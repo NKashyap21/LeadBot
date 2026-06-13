@@ -91,7 +91,7 @@ This project uses a **Google Service Account** to write to your sheet without an
 3. Give it a name (e.g. `leads-bot`) → click **Create and Continue** → **Done**
 4. Click on the service account you just created
 5. Go to the **Keys** tab → **Add Key** → **Create new key** → **JSON**
-6. A `.json` file will download — rename it and place it in the project root (this is your `pythonleadsbot-xxxx.json` file)
+6. A `.json` file will download — rename it and place it in the project root 
 
 ### Step 4 — Share Your Google Sheet with the Service Account
 
@@ -133,7 +133,7 @@ uv run main.py
 You will be prompted to enter your query:
 
 ```
-Enter your lead generation query: supply chain and warehouse managers in Mumbai working at a 3PL company
+input: supply chain and warehouse managers in Mumbai working at a 3PL company
 ```
 
 The agent will print progress as it runs and append all found leads to your Google Sheet.
