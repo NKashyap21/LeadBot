@@ -192,24 +192,28 @@ def generate_leads(req: GenerateRequest):
                 yield f"data: {json.dumps({'type': 'done', 'message': 'No leads found. Process finished.'})}\n\n"
                 return
 
-            # Cache & Deduplicate via SQLite
-            yield f"data: {json.dumps({'type': 'status', 'message': 'Filtering duplicate leads using SQLite cache...'})}\n\n"
+            # Cache & Deduplicate via Google Sheet
+            yield f"data: {json.dumps({'type': 'status', 'message': 'Fetching existing LinkedIn URLs from Google Sheet to filter duplicates...'})}\n\n"
             await asyncio.sleep(0.1)
             
-            new_leads = []
-            with sqlite3.connect("leads.db") as connection:
-                cursor = connection.cursor()
-                cursor.execute("CREATE TABLE IF NOT EXISTS leads_seen(linkedin_url TEXT PRIMARY KEY)")
+            try:
+                # Column 6 is LinkedIn URL
+                # Fetch all values to create a deduplication set
+                existing_urls = set(sheet.col_values(6))
+            except Exception as sheet_read_err:
+                yield f"data: {json.dumps({'type': 'status', 'message': f'Warning: Could not read Google Sheet to deduplicate. Processing all leads. Error: {str(sheet_read_err)}'})}\n\n"
+                existing_urls = set()
                 
-                for lead in final_result:
-                    linkedin_url = lead.get("linkedin_url")
-                    name = lead.get("name")
-                    if not is_duplicate(connection, linkedin_url):
-                        new_leads.append(lead)
-                        yield f"data: {json.dumps({'type': 'lead_found', 'lead': lead})}\n\n"
-                    else:
-                        yield f"data: {json.dumps({'type': 'lead_skipped', 'name': name})}\n\n"
-                    await asyncio.sleep(0.05)
+            new_leads = []
+            for lead in final_result:
+                linkedin_url = lead.get("linkedin_url")
+                name = lead.get("name")
+                if linkedin_url not in existing_urls:
+                    new_leads.append(lead)
+                    yield f"data: {json.dumps({'type': 'lead_found', 'lead': lead})}\n\n"
+                else:
+                    yield f"data: {json.dumps({'type': 'lead_skipped', 'name': name})}\n\n"
+                await asyncio.sleep(0.05)
 
             if not new_leads:
                 yield f"data: {json.dumps({'type': 'status', 'message': 'All leads returned are duplicates already processed in previous runs.'})}\n\n"
@@ -250,29 +254,27 @@ def generate_leads(req: GenerateRequest):
                 yield f"data: {json.dumps({'type': 'lead_enriched', 'lead': lead})}\n\n"
                 await asyncio.sleep(0.1)
 
-            # Append to Google Sheets and commit database
+            # Append to Google Sheets
             yield f"data: {json.dumps({'type': 'status', 'message': f'Writing enriched leads to Google Sheet: \"{sheet_name}\"...'})}\n\n"
             await asyncio.sleep(0.1)
-
-            with sqlite3.connect("leads.db") as connection:
-                for lead in enriched_leads:
-                    name = lead.get("name")
-                    email = lead.get("email")
-                    phoneNum = lead.get("phone_number")
-                    company = lead.get("company")
-                    position = lead.get("position")
-                    linkedin_url = lead.get("linkedin_url")
-                    location = lead.get("location")
-
-                    try:
-                        sheet.append_row([name, email, phoneNum, company, position, linkedin_url, location])
-                        mark_seen(connection, linkedin_url)
-                        yield f"data: {json.dumps({'type': 'lead_saved', 'name': name})}\n\n"
-                    except Exception as sheet_err:
-                        err_msg = f"Failed to write lead \"{name}\" to sheet: {str(sheet_err)}"
-                        yield f"data: {json.dumps({'type': 'error', 'message': err_msg})}\n\n"
-                        return
-                    await asyncio.sleep(0.1)
+            
+            for lead in enriched_leads:
+                name = lead.get("name")
+                email = lead.get("email")
+                phoneNum = lead.get("phone_number")
+                company = lead.get("company")
+                position = lead.get("position")
+                linkedin_url = lead.get("linkedin_url")
+                location = lead.get("location")
+                
+                try:
+                    sheet.append_row([name, email, phoneNum, company, position, linkedin_url, location])
+                    yield f"data: {json.dumps({'type': 'lead_saved', 'name': name})}\n\n"
+                except Exception as sheet_err:
+                    err_msg = f"Failed to write lead \"{name}\" to sheet: {str(sheet_err)}"
+                    yield f"data: {json.dumps({'type': 'error', 'message': err_msg})}\n\n"
+                    return
+                await asyncio.sleep(0.1)
 
             yield f"data: {json.dumps({'type': 'done', 'message': f'Successfully parsed and added {len(enriched_leads)} leads to Google Sheets!'})}\n\n"
 
