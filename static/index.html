@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeadBot - Premium B2B Lead Generator</title>
+    <!-- Google Fonts for modern typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="container">
+        
+        <!-- ================= LOGIN SCREEN ================= -->
+        <div id="login-screen" class="card fade-in hidden">
+            <div class="logo">
+                <span class="gradient-text">LeadBot</span>
+            </div>
+            <h2>Secure Access Required</h2>
+            <p class="subtitle">Please enter the security password to access LeadBot.</p>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <div id="login-error" class="error-msg hidden">Incorrect password. Please try again.</div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Unlock Application</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- ================= MAIN DASHBOARD ================= -->
+        <div id="dashboard" class="hidden">
+            <!-- Header -->
+            <header>
+                <div class="logo">
+                    <span class="gradient-text">LeadBot</span>
+                    <span class="badge" id="status-badge">Ready</span>
+                </div>
+                <div class="nav-actions">
+                    <button id="btn-settings" class="btn btn-secondary">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Settings
+                    </button>
+                    <button id="btn-logout" class="btn btn-icon" title="Logout">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    </button>
+                </div>
+            </header>
+
+            <main>
+                <!-- Main Grid Layout -->
+                <div class="main-grid">
+                    
+                    <!-- LEFT COLUMN: Search Form or Settings -->
+                    <div class="left-col">
+                        <!-- Search Card -->
+                        <div id="search-card" class="card active-card">
+                            <h2>Generate Leads</h2>
+                            <p class="subtitle">Describe your target lead profile in natural language. We'll search LinkedIn and enrich contact info.</p>
+                            
+                            <form id="search-form">
+                                <div class="input-group">
+                                    <label for="query-input">Lead Prompt Query</label>
+                                    <textarea id="query-input" rows="4" placeholder="e.g. supply chain and warehouse managers in Mumbai working at a 3PL company" required></textarea>
+                                </div>
+                                <button type="submit" id="btn-run" class="btn btn-primary btn-block">
+                                    <span>Find & Enrich Leads</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Settings Card -->
+                        <div id="settings-card" class="card hidden">
+                            <div class="card-header">
+                                <h2>API Settings</h2>
+                                <button id="btn-close-settings" class="btn-close">&times;</button>
+                            </div>
+                            <p class="subtitle">Configure keys and credentials to connect LeadBot to your accounts.</p>
+                            
+                            <div id="warning-no-auth" class="warning-banner hidden">
+                                <strong>Caution:</strong> No master APP_PASSWORD set on the server. Your settings are public.
+                            </div>
+
+                            <form id="settings-form">
+                                <div class="input-group">
+                                    <label for="groq-key">Groq API Key (Llama LLM)</label>
+                                    <input type="password" id="groq-key" placeholder="gsk_...">
+                                </div>
+                                <div class="input-group">
+                                    <label for="serp-key">SerpAPI Key (Google Search)</label>
+                                    <input type="password" id="serp-key" placeholder="API Key">
+                                </div>
+                                <div class="input-group">
+                                    <label for="hunter-key">Hunter.io Key (Email Lookup)</label>
+                                    <input type="password" id="hunter-key" placeholder="API Key">
+                                </div>
+                                <div class="input-group">
+                                    <label for="sheet-name">Google Sheet Name</label>
+                                    <input type="text" id="sheet-name" placeholder="My Leads Sheet" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="credentials-json">Google Service Account JSON Content</label>
+                                    <textarea id="credentials-json" rows="5" placeholder='Paste your complete download credentials.json here e.g. { "type": "service_account", ... }'></textarea>
+                                    <span class="help-text">Leave blank if credentials are already configured and you don't want to overwrite.</span>
+                                </div>
+                                <div id="settings-msg" class="success-msg hidden">Settings saved successfully.</div>
+                                <div id="settings-error" class="error-msg hidden">Save failed. Check JSON format.</div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: Console logs and Stepper -->
+                    <div class="right-col">
+                        <div class="card terminal-card">
+                            <div class="card-header">
+                                <h3>Processing Status</h3>
+                                <div class="loader-ring hidden" id="stepper-spinner"></div>
+                            </div>
+                            
+                            <!-- Timeline/Stepper -->
+                            <div class="timeline">
+                                <div class="step" id="step-llm">
+                                    <div class="step-icon"></div>
+                                    <div class="step-info">
+                                        <div class="step-title">LLM Refinement</div>
+                                        <div class="step-desc">Refining search arguments</div>
+                                    </div>
+                                </div>
+                                <div class="step" id="step-serp">
+                                    <div class="step-icon"></div>
+                                    <div class="step-info">
+                                        <div class="step-title">LinkedIn Search</div>
+                                        <div class="step-desc">Querying SerpAPI</div>
+                                    </div>
+                                </div>
+                                <div class="step" id="step-dedup">
+                                    <div class="step-icon"></div>
+                                    <div class="step-info">
+                                        <div class="step-title">Cache Filtering</div>
+                                        <div class="step-desc">SQLite deduplication</div>
+                                    </div>
+                                </div>
+                                <div class="step" id="step-hunter">
+                                    <div class="step-icon"></div>
+                                    <div class="step-info">
+                                        <div class="step-title">Email Enrichment</div>
+                                        <div class="step-desc">Hunter.io contacts fetch</div>
+                                    </div>
+                                </div>
+                                <div class="step" id="step-sheets">
+                                    <div class="step-icon"></div>
+                                    <div class="step-info">
+                                        <div class="step-title">Sheet Export</div>
+                                        <div class="step-desc">Saving to Google Sheets</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Raw Logs -->
+                            <div class="log-console" id="log-console">
+                                <div class="log-placeholder">Ready to generate leads. Enter a query on the left.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM ROW: Lead Results List -->
+                <div class="results-container">
+                    <div class="card results-card">
+                        <div class="card-header">
+                            <h3>Leads Found In Current Session</h3>
+                            <span class="count-badge" id="leads-count">0 Leads</span>
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="leads-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Position</th>
+                                        <th>Company</th>
+                                        <th>Location</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>LinkedIn</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leads-body">
+                                    <tr id="empty-table-row">
+                                        <td colspan="8" class="text-center">No leads processed yet in this session.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script src="/static/index.js"></script>
+</body>
+</html>

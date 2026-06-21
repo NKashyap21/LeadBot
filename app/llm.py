@@ -14,7 +14,10 @@ class LLMResponse(BaseModel):
 
 
 def EnrichQuery(model:ChatGroq, query:str)->(dict,str):
-    with open("C:\\Users\\Nukal\\Projects\\PythonLeadAgent\\systemPrompt.txt","r") as f:
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    prompt_path = os.path.join(current_dir, "..", "systemPrompt.txt")
+    with open(prompt_path, "r", encoding="utf-8") as f:
         systemPrompt = f.read()
 
     prompt = ChatPromptTemplate([

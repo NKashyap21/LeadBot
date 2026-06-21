@@ -10,3 +10,9 @@ wheels/
 .venv
 pythonleadsbot-1c6115601a16.json
 .env
+
+# Database and Credentials
+leads.db
+google-credentials.json
+*credentials*.json
+*.log
