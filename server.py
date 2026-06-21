@@ -159,6 +159,14 @@ def generate_leads(req: GenerateRequest):
                 client = serpapi.Client(api_key=serp_key)
                 gc = gspread.service_account(filename=credentials_file)
                 sheet = gc.open(sheet_name).sheet1
+                
+                # Check and populate headers if sheet is empty
+                try:
+                    first_row = sheet.row_values(1)
+                    if not first_row:
+                        sheet.append_row(["Name", "Email", "Phone", "Company", "Position", "LinkedIn URL", "Location"])
+                except Exception:
+                    pass
             except Exception as e:
                 yield f"data: {json.dumps({'type': 'error', 'message': f'Client initialization error: {str(e)}'})}\n\n"
                 return
@@ -275,6 +283,43 @@ def generate_leads(req: GenerateRequest):
                     yield f"data: {json.dumps({'type': 'error', 'message': err_msg})}\n\n"
                     return
                 await asyncio.sleep(0.1)
+
+            # Apply professional formatting to Google Sheet
+            yield f"data: {json.dumps({'type': 'status', 'message': 'Applying styling and auto-fitting column widths in Google Sheets...'})}\n\n"
+            try:
+                # Format headers: Slate 900 background (#0f172a), bold white text, size 11, centered
+                sheet.format("A1:G1", {
+                    "backgroundColor": {
+                        "red": 15 / 255.0,
+                        "green": 23 / 255.0,
+                        "blue": 42 / 255.0
+                    },
+                    "horizontalAlignment": "CENTER",
+                    "textFormat": {
+                        "foregroundColor": {"red": 1.0, "green": 1.0, "blue": 1.0},
+                        "fontSize": 11,
+                        "bold": True
+                    }
+                })
+                # Freeze first row (header stays visible on scroll)
+                sheet.freeze(rows=1)
+                
+                # Format data cells: Center align Email (Col B) and Phone (Col C)
+                sheet.format("B2:C1000", {
+                    "horizontalAlignment": "CENTER"
+                })
+                # Format LinkedIn URL (Col F): Underlined, blue link text
+                sheet.format("F2:F1000", {
+                    "textFormat": {
+                        "foregroundColor": {"red": 14/255.0, "green": 165/255.0, "blue": 233/255.0},
+                        "underline": True
+                    }
+                })
+                
+                # Automatically resize all columns from A to G to fit contents perfectly
+                sheet.columns_auto_resize(0, 6)
+            except Exception as format_err:
+                yield f"data: {json.dumps({'type': 'status', 'message': f'Warning: Could not format sheet cells: {str(format_err)}'})}\n\n"
 
             yield f"data: {json.dumps({'type': 'done', 'message': f'Successfully parsed and added {len(enriched_leads)} leads to Google Sheets!'})}\n\n"
 
